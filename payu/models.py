@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from .signals import payment_completed, payment_authorized, payment_flagged
+from payu.signals import payment_completed, payment_authorized, payment_flagged
 
 PAYU_PAYMENT_STATUS = (
     ('PAYMENT_AUTHORIZED', 'PAYMENT_AUTHORIZED'),
@@ -16,14 +16,14 @@ PAYU_PAYMENT_STATUS = (
 
 class PayUIPN(models.Model):
     HASH = models.CharField(max_length=64)
-    SALEDATE = models.DateTimeField(blank=True, null=True, verbose_name='Sale date')
-    COMPLETE_DATE = models.DateTimeField(blank=True, null=True, verbose_name='Complete date')
-    PAYMENTDATE = models.DateTimeField(blank=True, null=True, verbose_name='Payment date')
-    REFNO = models.CharField(max_length=9, verbose_name='ePayment reference')
-    REFNOEXT = models.CharField(max_length=100, verbose_name='Merchant reference')
-    ORDERNO = models.CharField(max_length=6, verbose_name='Merchant order #')
-    ORDERSTATUS = models.CharField(max_length=18, choices=PAYU_PAYMENT_STATUS, verbose_name='Status')
-    PAYMETHOD_CODE = models.CharField(max_length=10, verbose_name='Payment method')
+    SALEDATE = models.DateTimeField('Sale date', blank=True, null=True)
+    COMPLETE_DATE = models.DateTimeField('Complete date', blank=True, null=True)
+    PAYMENTDATE = models.DateTimeField('Payment date', blank=True, null=True)
+    REFNO = models.CharField('ePayment reference', max_length=9)
+    REFNOEXT = models.CharField('Merchant reference', max_length=100)
+    ORDERNO = models.CharField('Merchant order #', max_length=6)
+    ORDERSTATUS = models.CharField('Status', max_length=18, choices=PAYU_PAYMENT_STATUS)
+    PAYMETHOD_CODE = models.CharField('Payment method', max_length=10)
 
     response = models.TextField(blank=True)
     ip_address = models.IPAddressField(blank=True)

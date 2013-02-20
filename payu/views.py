@@ -6,9 +6,9 @@ from datetime import datetime
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from .forms import PayUIPNForm
-from .conf import MERCHANT_KEY
-from .models import PayUIPN
+from payu.forms import PayUIPNForm
+from payu.conf import MERCHANT_KEY
+from payu.models import PayUIPN
 
 
 @require_POST
@@ -19,8 +19,7 @@ def ipn(request):
     flag = None
 
     s = ''
-    for k in ['SALEDATE', 'PAYMENTDATE', 'COMPLETE_DATE', 'REFNO', 'REFNOEXT', 'ORDERNO', 'ORDERSTATUS', 'PAYMETHOD',
-              'PAYMETHOD_CODE', ]:
+    for k in ['SALEDATE', 'PAYMENTDATE', 'COMPLETE_DATE', 'REFNO', 'REFNOEXT', 'ORDERNO', 'ORDERSTATUS', 'PAYMETHOD', 'PAYMETHOD_CODE', ]:
         if request.POST.has_key(k):
             s += '%s%s' % (len(request.POST.get(k)), request.POST.get(k))
 

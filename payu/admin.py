@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib import admin
-from .models import PayUIPN
+from payu.models import PayUIPN
 
 
 class PayUIPNAdmin(admin.ModelAdmin):

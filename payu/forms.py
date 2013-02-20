@@ -5,8 +5,8 @@ import hmac
 import re
 from datetime import datetime
 from django import forms
-from .models import PayUIPN
-from .conf import MERCHANT, MERCHANT_KEY, TEST
+from payu.models import PayUIPN
+from payu.conf import MERCHANT, MERCHANT_KEY, TEST, LANGUAGE, CURRENCY, BACK_REF
 
 
 class ValueHiddenInput(forms.HiddenInput):
@@ -18,8 +18,7 @@ class ValueHiddenInput(forms.HiddenInput):
     def render(self, name, value, attrs=None):
         m = re.match(r'^ORDER_(\d+)_(\d+)$', name)
         if m is not None:
-            name = 'ORDER_%s[]' % ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE', 'QTY', 'VAT', 'VER'][
-                int('0' + m.group(2))]
+            name = 'ORDER_%s[]' % ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE', 'QTY', 'VAT', 'VER'][int('0' + m.group(2))]
         if value is None:
             return u''
         else:
@@ -33,7 +32,8 @@ PAYU_DATE_FORMATS = (
 PAYU_CURRENCIES = (
     ('USD', 'USD'),
     ('RON', 'RON'),
-    ('EUR', 'EUR')
+    ('EUR', 'EUR'),
+    ('RUB', 'RUB'),
 )
 
 PAYU_PAYMENT_METHODS = (
@@ -51,7 +51,8 @@ PAYU_LANGUAGES = (
     ('DE', u'Deutsch'),
     ('ES', u'Español'),
     ('FR', u'Français'),
-    ('IT', u'Italiano')
+    ('IT', u'Italiano'),
+    ('RU', u'Русский'),
 )
 
 
@@ -71,17 +72,11 @@ class OrderWidget(forms.MultiWidget):
         super(OrderWidget, self).__init__(all_widgets, *args, **kwargs)
 
     def decompress(self, value):
-        v = []
-        v.append(value.get('PNAME', ''))
-        v.append(value.get('PGROUP', ''))
-        v.append(value.get('PCODE', ''))
-        v.append(value.get('PINFO', ''))
-        v.append(value.get('PRICE', ''))
-        v.append(value.get('PRICE_TYPE', ''))
-        v.append(value.get('QTY', ''))
-        v.append(value.get('VAT', ''))
-        v.append(value.get('VER', ''))
-        return v
+        return [
+            value.get('PNAME', ''), value.get('PGROUP', ''), value.get('PCODE', ''), value.get('PINFO', ''),
+            value.get('PRICE', ''), value.get('PRICE_TYPE', ''), value.get('QTY', ''), value.get('VAT', ''),
+            value.get('VER', '')
+        ]
 
 
 class OrderField(forms.MultiValueField):
@@ -132,7 +127,7 @@ class PayULiveUpdateForm(forms.Form):
 
     ORDER = OrdersField()
     ORDER_SHIPPING = forms.CharField(widget=ValueHiddenInput)
-    PRICES_CURRENCY = forms.ChoiceField(widget=ValueHiddenInput, choices=PAYU_CURRENCIES, initial='USD')
+    PRICES_CURRENCY = forms.ChoiceField(widget=ValueHiddenInput, choices=PAYU_CURRENCIES, initial=CURRENCY)
     DISCOUNT = forms.CharField(widget=ValueHiddenInput)
 
     PAY_METHOD = forms.ChoiceField(widget=ValueHiddenInput, choices=PAYU_PAYMENT_METHODS)
@@ -148,10 +143,10 @@ class PayULiveUpdateForm(forms.Form):
     BILL_COMPANY = forms.CharField(widget=ValueHiddenInput)
     BILL_FISCALCODE = forms.CharField(widget=ValueHiddenInput)
 
-    CURRENCY = forms.ChoiceField(widget=ValueHiddenInput, choices=PAYU_CURRENCIES, initial='USD')
+    CURRENCY = forms.ChoiceField(widget=ValueHiddenInput, choices=PAYU_CURRENCIES, initial=CURRENCY)
     AUTOMODE = forms.CharField(widget=ValueHiddenInput, initial='1')
-    LANGUAGE = forms.ChoiceField(widget=ValueHiddenInput, choices=PAYU_LANGUAGES, initial='EN')
-    BACK_REF = forms.CharField(widget=ValueHiddenInput)
+    LANGUAGE = forms.ChoiceField(widget=ValueHiddenInput, choices=PAYU_LANGUAGES, initial=LANGUAGE)
+    BACK_REF = forms.CharField(widget=ValueHiddenInput, initial=BACK_REF)
     TESTORDER = forms.CharField(widget=ValueHiddenInput, initial=('%s' % TEST).upper())
 
     def calc_hash(self):
